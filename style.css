@@ -1,4 +1,4 @@
-canvas#nbodyCanvas
-{
-  background:url(htcas_2.jpg);
+.star.jeffers {
+    fill: white;
+    stroke: #666666;
 }

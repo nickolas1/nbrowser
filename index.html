@@ -1,22 +1,207 @@
 <!DOCTYPE html>
 <head>
   <link href="style.css" rel="stylesheet" type="text/css">
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-  <script src="stars.js"></script>
-  <script src="leapfrog.js"></script>
-
-  <script>
-    $(document).ready(function() {
-      var leapfrogger = new Leapfrogger();
-      leapfrogger.init();
-    });
-  </script>
-
+  <script src="js/jquery.min.js"></script>
+  <script src="js/d3.v3.min.js"></script>
+  <script src="js/starfunctions.js"></script>
+  <script src="js/themes.js"></script>  
 </head>
 <body>
-  <canvas id="nbodyCanvas" width="703" height="474"><img src ='lookingatstars_big.jpg'></canvas>
-</br>
-<a href = "http://www.oliverjeffers.com/picture-books/how-to-catch-a-star">buy some Oliver Jeffers books</a>
+    <div id="nbodycanvas"></div>
+    </br>
+    <a href = "http://www.oliverjeffers.com/picture-books/how-to-catch-a-star">buy some Oliver Jeffers books</a>
 
+    <script type="text/javascript">
+
+    var theme = "kepler";
+    var nStars = 16,
+        masses,
+        pos,
+        vel,
+        acc;
+    var starsvg;
+    var starApexes = [],
+        apexStorage = [];
+    
+    var w = 703,
+        h = 474;
+        
+    var x = d3.scale.linear()
+            .range([0, w]),
+        y = d3.scale.linear()
+            .range([h, 0]);
+            
+    // star apexes
+    var lineFunction = d3.svg.line()
+        .x(function(d) { return x(d[0]); })
+        .y(function(d) { return y(d[1]); })
+        .interpolate("linear");
+    
+    $(function() {
+        initializeSvgLayers();
+        setBackgroundImage();
+        generateStars();
+        equilibrateStars();
+        calcAccels();
+        starsvg = initializeStarPlot();
+       // integrateStars();
+    })
+
+    /////////////////////////////////////////
+    /** DOM initialization and star setup **/  
+     
+    var initializeSvgLayers = function() {
+        var svg = d3.select("#nbodycanvas").append("svg")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("id", "svg");
+        svg.append("image") // background image layer
+            .attr("width", w)
+            .attr("height", h)
+            .attr("id", "backgroundImage");
+        svg.append("g") // stars layer
+            .attr("width", w)
+            .attr("height", h)
+            .attr("id", "starLayer");
+        var defs = svg.append("defs");
+        defs.append("filter")
+            .attr("id", "gaussblur2")
+          .append("feGaussianBlur")
+            .attr("in", "SourceGraphic")
+            .attr("stdDeviation", 2);
+        defs.append("filter")
+            .attr("id", "gaussblur3")
+          .append("feGaussianBlur")
+            .attr("in", "SourceGraphic")
+            .attr("stdDeviation", 3);
+    };
+    
+    var generateStars = function() {
+        masses = generateMasses(nStars);
+        pos = generatePositions(nStars);
+        acc = generatePositions(nStars);  // dummy values
+        vel = generateVelocities(nStars, pos);
+    };
+
+    var equilibrateStars = function() {
+        var cm = calcCM(nStars, masses, pos, vel);
+        var ke = calcKineticEnergy(nStars, masses, vel);
+        var pe = calcPotentialEnergy(nStars, masses, pos);
+        var scalepos,
+            scalevel;
+        var i, k;
+        
+        // move to the center of mass
+        for (i = 0; i < nStars; i++) {
+            for (k = 0; k < 3; k++) {
+                pos[i][k] -= cm[0][k];
+                vel[i][k] -= cm[1][k];
+            }
+        }   
+        
+        // scale energy to be in virial equilibrium
+        scalevel = Math.sqrt(-0.5 * pe / ke);
+        for(i = 0; i < nStars; i++){
+            for(k = 0; k < 3; k++){
+                vel[i][k] *= scalevel;
+            }
+        }
+        
+        // scale so that total energy is -0.25
+        scalepos = -0.25 / (ke*scalevel*scalevel + pe);
+        scalevel = Math.sqrt(scalepos);
+        for(i = 0; i < nStars; i++){
+            for(k = 0; k < 3; k++){
+                pos[i][k] /= scalepos;
+                vel[i][k] *= scalevel;
+            }
+        } 
+    };
+    
+
+    ////////////////////////////////////////
+    /** time integration functions below **/   
+    
+    var integrateStars = function() {
+        var fps = 64;
+        var dt = .005;
+        var count = 0;
+        setInterval( function() {
+            leapfrogStep(dt);
+            count++;
+            if (count === 8) {
+                transitionStars(250);
+                count = 0;
+            }
+           /* d3.selectAll(".star")
+          .transition()
+            .ease("linear")
+            .attr("transform",function(d, i) { 
+            return "translate(" + oldpos[i][0] + "," + oldpos[i][1] + ")"; 
+            })
+            .duration(1000/fps);*/
+        }, 1000/fps);
+    };
+    
+    var leapfrogStep = function(dt) {
+        kickStars(dt * 0.5);
+        driftStars(dt);
+        calcAccels();
+        kickStars(dt * 0.5);
+    };
+    
+    var kickStars = function(tstep) {
+        var i, k;
+        for (i = 0; i < nStars; i++) {
+            for (k = 0; k < 3; k++) {
+                vel[i][k] += acc[i][k] * tstep;
+            }
+        }
+    };
+    
+    var driftStars = function(tstep) {
+        var i, k;
+        for (i = 0; i < nStars; i++) {
+            for (k = 0; k < 3; k++) {   
+                pos[i][k] += vel[i][k] * tstep;
+            }
+        }
+    };
+    
+    var calcAccels = function(){
+        var dr = [0.0, 0.0, 0.0],
+            r2,
+            r3,
+            a,
+            i, j, k;
+        
+        for(i = 0; i < nStars; i++) {
+            for(k = 0; k < 3; k++) {
+                acc[i][k] = 0.0;
+            }
+        }
+        
+        for(i = 0; i < nStars - 1; i++){
+            for(j = i + 1; j < nStars; j++){
+                r2 = 0.0
+                for(k = 0; k < 3; k++){
+                    dr[k] = pos[j][k] - pos[i][k];
+                    r2 += dr[k] * dr[k]
+                }
+                r3 = r2 * Math.sqrt(r2) + 1.e-7;
+                
+                for(k = 0; k < 3; k++){
+                    a = dr[k] / r3;
+                    acc[i][k] += a * masses[j];
+                    acc[j][k] += -a * masses[i];
+                }             
+            }
+        }
+    };
+    
+    
+    
+
+    </script>
 </body>
 </html>
