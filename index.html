@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300,600' rel='stylesheet' type='text/css'>
   <link href="style.css" rel="stylesheet" type="text/css">
   <script src="js/jquery.min.js"></script>
   <script src="js/d3.v3.min.js"></script>
@@ -8,13 +9,42 @@
 </head>
 <body>
     <div id="nbodycanvas"></div>
+    <span id="keplerChooser" class="selector selected" onclick="selectKepler()">Kepler theme</span>
+    <span id="jeffersChooser" class="selector" onclick="selectJeffers()">Jeffers theme</span>
     </br>
     <a href = "http://www.oliverjeffers.com/picture-books/how-to-catch-a-star">buy some Oliver Jeffers books</a>
 
     <script type="text/javascript">
 
-    var theme = "kepler";
-    var nStars = 16,
+    var selectKepler = function() {
+        theme = "kepler";
+        $("#jeffersChooser").attr("class", "selector");
+        $("#keplerChooser").attr("class", "selector selected");
+        $("#starLayer").empty();
+        setBackgroundImage();
+        generateStars();
+        equilibrateStars();
+        calcAccels();
+        starsvg = initializeStarPlot();
+        integrateStars();
+    };
+    var selectJeffers = function() {
+        theme = "jeffers";
+        $("#keplerChooser").attr("class", "selector");
+        $("#jeffersChooser").attr("class", "selector selected");
+        $("#starLayer").empty();
+        starApexes = [],
+        apexStorage = [];
+        setBackgroundImage();
+        generateStars();
+        equilibrateStars();
+        calcAccels();
+        starsvg = initializeStarPlot();
+        integrateStars();
+    };
+
+    var theme = "jeffers";
+    var nStars = 32,
         masses,
         pos,
         vel,
@@ -23,8 +53,8 @@
     var starApexes = [],
         apexStorage = [];
     
-    var w = 703,
-        h = 474;
+    var w = 700,
+        h = 390;
         
     var x = d3.scale.linear()
             .range([0, w]),
@@ -44,7 +74,7 @@
         equilibrateStars();
         calcAccels();
         starsvg = initializeStarPlot();
-       // integrateStars();
+        integrateStars();
     })
 
     /////////////////////////////////////////
@@ -124,7 +154,7 @@
     
     var integrateStars = function() {
         var fps = 64;
-        var dt = .005;
+        var dt = .002;
         var count = 0;
         setInterval( function() {
             leapfrogStep(dt);

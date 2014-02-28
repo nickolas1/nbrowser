@@ -70,7 +70,7 @@ var initializeStarPlot = function() {
             
         var colorChoices = ["rgb(221, 56, 0)", "rgb(221, 137, 20)", "rgb(234, 225, 89)", "rgb(106, 137, 234)"]
         var colors = d3.scale.linear()
-            .domain(d3.range(0, 1, 1.0 / (colorChoices.length - 1)))
+            .domain(d3.range(0, 1.01, 1.0 / (colorChoices.length - 1)))
             .range(colorChoices);
         var c = d3.scale.log()
             .domain(d3.extent(masses))
@@ -82,7 +82,7 @@ var initializeStarPlot = function() {
             .append("circle")
             .attr("cx", function(d) { return x(d[0]); })
             .attr("cy", function(d) { return y(d[1]); })
-            .attr("r", function(d, i) { return 20 * Math.sqrt(masses[i]/d3.max(masses)); })
+            .attr("r", function(d, i) { return 30 * Math.sqrt(masses[i]/d3.max(masses)); })
             .attr("fill", function(d, i) { return colors(c(masses[i])); })
             .attr("opacity", 0.8)
             .attr("class", "kepler star diffuse")
@@ -94,7 +94,7 @@ var initializeStarPlot = function() {
             .append("circle")
             .attr("cx", function(d) { return x(d[0]); })
             .attr("cy", function(d) { return y(d[1]); })
-            .attr("r", function(d, i) { return 18 * Math.sqrt(masses[i]/d3.max(masses)); })
+            .attr("r", function(d, i) { return 27 * Math.sqrt(masses[i]/d3.max(masses)); })
             .attr("fill", function(d, i) { return colors(c(masses[i])); })
             .attr("opacity", 0.5)
             .attr("class", "kepler star solid");
@@ -105,7 +105,7 @@ var initializeStarPlot = function() {
             .append("circle")
             .attr("cx", function(d) { return x(d[0]); })
             .attr("cy", function(d) { return y(d[1]); })
-            .attr("r", function(d, i) { return 5 * Math.sqrt(masses[i]/d3.max(masses)); })
+            .attr("r", function(d, i) { return 7.5 * Math.sqrt(masses[i]/d3.max(masses)); })
             .attr("fill", "rgba(255, 255, 255, .9)")
             .attr("class", "kepler star compact")
             .attr("filter", "url(#gaussblur2)");
@@ -127,6 +127,14 @@ var transitionStars = function(duration) {
             .attr("d", lineFunction)
             .duration(duration);
     }
+    else if (theme === "kepler") {
+        d3.selectAll(".star")
+          .transition()
+            .ease("linear")
+            .attr("cx", function(d) { return x(d[0]); })
+            .attr("cy", function(d) { return y(d[1]); })
+            .duration(duration);
+    }
 };
 
 
@@ -136,7 +144,7 @@ var setBackgroundImage = function() {
         fBgImg = "images/htcas_2.jpg";
     }
     else if (theme === "kepler") {
-        fBgImg = "images/htcas_2.jpg";
+        fBgImg = "images/purple-nebula.jpg";
     }
     d3.select("#backgroundImage").attr("xlink:href", fBgImg);
 };
