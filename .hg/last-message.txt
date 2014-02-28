@@ -1,0 +1,2 @@
+updated readme, which was from the quarkonium n-body code. (I grabbed their canvas setup and some boilerplate javascript as a base for this code)
+
