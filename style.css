@@ -8,6 +8,11 @@ body {
     font-weight: 300;
 }
 
+.instruction {
+    padding-right: 10px;
+    font-size: 0.8em;
+}
+
 .selector {
     cursor: pointer;
     padding-right: 40px;

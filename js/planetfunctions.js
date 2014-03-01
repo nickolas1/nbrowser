@@ -9,14 +9,15 @@ var generateMassesP = function(N) {
         fmn = (fm1 - 1.0 / Math.pow(mlo, alpham1)) / (N / 4 - 1),
         constant = 1.0 / alpham1;
     var masses = [],
-        mtot = 0.0;        
-    for(var i = 0; i < N / 4; i++){
+        mtot = 0.0; 
+    var i;       
+    for(i = 0; i < N / 4; i++){
         var fmi = fm1 - i * fmn;
         mass = 1.0 / Math.pow(fmi, constant);
         mtot += mass;
         masses.push(mass);
     }   
-    for(var i = N / 4; i < N; i++){
+    for(i = N / 4; i < N; i++){
         mass = 0.001;
         mtot += mass;
         masses.push(mass);
@@ -33,16 +34,21 @@ var generateBodiesP = function(N) {
         posy,
         posz,
         a1, a2;
-    var posbase = [[1.2, 1, 500], [-1, -1, 250], [-1.3, 0.8, -250], [1, -0.9, -500]],
+    var posbase = [[1.2, 1, 40], [-1, -1, 20], [-1.3, 0.8, 0], [1, -0.9, -20]],
+        velbase = [[.1, -.3, 0], [-.4, .3, 0], [.5,.2, 0], [-.2, -.2, 0]],
         scale = 0.3;
-    for(var i = 0; i < N / 4; i++) {
+    var i;
+    for(i = 0; i < N / 4; i++) {
         a1 = Math.random();
         a2 = Math.random();
         posz = posbase[i][2];
         posx = (posbase[i][0] + (0.5 - a1) * scale);
         posy = (posbase[i][1] + (0.5 - a2) * scale);
+        velx = velbase[i][0] * .05;
+        vely = velbase[i][1] * .05;
+        velz = velbase[i][2] * .05;
         pos.push([posx, posy, posz]);
-        vel.push([0, 0, 0]);
+        vel.push([velx, vely, velz]);
     }     
     
     // put three planets around each star
@@ -57,11 +63,11 @@ var generateBodiesP = function(N) {
         w,  // arg of periapsis
         M,  // mean anomoly
         statevec, // cartesian components
-        semiscale = 0.4;
+        semiscale = [0.4, 0.3, 0.25, 0.2];
         
     for(i = N / 4; i < N; i++) {
         if (count === 0) {
-            incbase = Math.PI * (118 - 15 * Math.random()) / 180;
+            incbase = Math.PI * (115 - 12 * Math.random()) / 180;
             semis = [1 + 0.1 * (0.5 - Math.random()),
                     1.5 + 0.1 * (0.5 - Math.random()),
                     2.1 + 0.1 * (0.5 - Math.random())];
@@ -79,15 +85,15 @@ var generateBodiesP = function(N) {
         w = 0;
         M = 0;
         inc = 0.01;*/
-        console.log(O,w,M,inc)
-        statevec = kepToCart(semis[count] * semiscale, ecc, inc, O, w, M, masses[i] + masses[parent]);
+
+        statevec = kepToCart(semis[count] * semiscale[parent], ecc, inc, O, w, M, masses[i] + masses[parent]);
         pos.push([statevec[0] + pos[parent][0], 
                 statevec[1] + pos[parent][1], 
                 statevec[2] + pos[parent][2]
                 ]);
         vel.push([statevec[3], statevec[4], statevec[5]]);
         
-        var r =  Math.sqrt(
+        /*var r =  Math.sqrt(
                      (pos[i][0] - pos[parent][0])*(pos[i][0] - pos[parent][0]) +
                      (pos[i][1] - pos[parent][1])*(pos[i][1] - pos[parent][1]) +
                      (pos[i][2] - pos[parent][2])*(pos[i][2] - pos[parent][2]));
@@ -95,7 +101,7 @@ var generateBodiesP = function(N) {
                      (vel[i][1] - vel[parent][1])*(vel[i][1] - vel[parent][1]) +
                      (vel[i][2] - vel[parent][2])*(vel[i][2] - vel[parent][2]);            
         var pot = -masses[i]*masses[parent] / r;
-        var kin = 0.5 * masses[i] * v2;
+        var kin = 0.5 * masses[i] * v2;*/
 
         count++;
         if (count === 3) {

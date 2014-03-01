@@ -19,9 +19,10 @@
 </head>
 <body>
     <div id="nbodycanvas"></div>
+    <span class="instruction">pick a theme:</span>
     <span id="jeffersChooser" class="selector" onclick="selectJeffers()">Jeffers cluster</span>
-    <span id="keplerChooser" class="selector selected" onclick="selectKepler()">Kepler cluster</span>
-    <span id="keplerPlanetChooser" class="selector" onclick="selectKeplerPlanet()">Kepler planets</span>
+    <span id="keplerChooser" class="selector" onclick="selectKepler()">Kepler cluster</span>
+    <span id="keplerPlanetChooser" class="selector selected" onclick="selectKeplerPlanet()">Kepler planets</span>
     </br>
     <a href="http://www.oliverjeffers.com/picture-books/how-to-catch-a-star">buy some Oliver Jeffers books</a>
     <a href="https://github.com/nickolas1/nbrowser">fork me</a>
@@ -80,7 +81,9 @@
         acc;
     var starsvg;
     var starApexes = [],
-        apexStorage = [];
+        apexStorage = [],
+        oldpos = []; // old positions for planet paths
+    var integrateTimer;
     
     var w = 700,
         h = 390;
@@ -101,12 +104,9 @@
         setBackgroundImage();
         generateStars();
         if (theme !== "keplerP") {
-            console.log("ALERT");
             equilibrateStars();
         }
         calcAccels();
-        console.log(pos);
-        console.log(acc);
         starsvg = initializeStarPlot();
         integrateStars();
     })
@@ -198,30 +198,26 @@
     
     var integrateStars = function() {
         var fps = 64,
-            redraw = 8;
+            redraw = 8,
+            totcount = 0,
+            dt = 0.002;
         if (theme === "keplerP") {
-            console.log("ALERT");
-            fps = 640;
-            redraw = 80;
+            fps = 64;
+            redraw = 8;
+            dt = 0.02;
         }
-        console.log(1000/fps, redraw, 1000/(fps/redraw));
-        var dt = 0.002;
+        console.log("timing ",1000/fps, redraw, 1000/(fps/redraw));
+       // var dt = 0.002;
         var count = 0;
-        setInterval( function() {
-            leapfrogStep(dt);
-           
+        clearInterval(integrateTimer);
+        integrateTimer = setInterval( function() {
+            leapfrogStep(dt); 
             count++;
+            totcount++;
             if (count === redraw) {
-                transitionStars(125);
+                transitionStars(125, totcount);
                 count = 0;
             }
-           /* d3.selectAll(".star")
-          .transition()
-            .ease("linear")
-            .attr("transform",function(d, i) { 
-            return "translate(" + oldpos[i][0] + "," + oldpos[i][1] + ")"; 
-            })
-            .duration(1000/fps);*/
         }, 1000/fps);
     };
     

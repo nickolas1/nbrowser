@@ -4,7 +4,7 @@ var initializeStarPlot = function() {
     
         var xrange = 12,
             yrange = xrange * h / w;
-        console.log(xrange, yrange);
+        var i, a;
         x.domain([-8, 4]);
         y.domain([2.5-yrange, 2.5]);
             
@@ -23,7 +23,7 @@ var initializeStarPlot = function() {
             [-5.5, 0.7]
         ];
         
-        for (var i = 0; i < nStars; i++) {
+        for (i = 0; i < nStars; i++) {
             var thisApexes = [];
             var thisApexStorage = [];
             var mscale = 0.0007/d3.min(masses),
@@ -31,9 +31,9 @@ var initializeStarPlot = function() {
                 stretchx,
                 stretchy;
             (Math.random() < 0.5) ? flip = 1.0 : flip = -1.0;
-            for (var a = 0; a < rawApexes.length; a++) {
-                var stretchx = (0.4 * Math.random() - 0.2 + 1) * flip,
-                    stretchy = (0.4 * Math.random() - 0.2 + 1);
+            for (a = 0; a < rawApexes.length; a++) {
+                stretchx = (0.4 * Math.random() - 0.2 + 1) * flip,
+                stretchy = (0.4 * Math.random() - 0.2 + 1);
                 thisApexes.push([
                     Math.sqrt(masses[i]*mscale)*rawApexes[a][0]*stretchx + pos[i][0],
                     Math.sqrt(masses[i]*mscale)*rawApexes[a][1]*stretchy + pos[i][1]]);
@@ -57,7 +57,6 @@ var initializeStarPlot = function() {
     else if (theme === "kepler") {
         var xrange = 5,
             yrange = xrange * h / w;
-        console.log(xrange, yrange);
         x.domain([-xrange/2, xrange/2]);
         y.domain([-yrange/2, yrange/2]);
         
@@ -113,7 +112,6 @@ var initializeStarPlot = function() {
     else if (theme === "keplerP") {
         var xrange = 6,
             yrange = xrange * h / w;
-        console.log(xrange, yrange);
         x.domain([-xrange/2, xrange/2]);
         y.domain([-yrange/2, yrange/2]);
         
@@ -140,7 +138,7 @@ var initializeStarPlot = function() {
             .attr("cy", function(d) { return y(d[1]); })
             .attr("r", function(d, i) {
                 if (masses[i] > 0.01) { 
-                    return 35 * Math.sqrt(masses[i]/d3.max(masses));
+                    return 37 * Math.sqrt(masses[i]/d3.max(masses));
                 } 
                 else {
                     return 3;
@@ -166,7 +164,7 @@ var initializeStarPlot = function() {
             .attr("cy", function(d) { return y(d[1]); })
             .attr("r", function(d, i) { 
                 if (masses[i] > 0.01) { 
-                    return 33 * Math.sqrt(masses[i]/d3.max(masses));
+                    return 32 * Math.sqrt(masses[i]/d3.max(masses));
                 } 
                 else {
                     return 4;
@@ -182,7 +180,7 @@ var initializeStarPlot = function() {
             })
             .attr("opacity", function(d, i) {
                 if (masses[i] > 0.01) {
-                    return 0.5;
+                    return 0.9;
                 }
                 else {
                     return 1.0;
@@ -215,16 +213,16 @@ var initializeStarPlot = function() {
             })
             .attr("fill", "rgba(255, 255, 255, .9)")
             .attr("class", "kepler star compact")
-            .attr("filter", "url(#gaussblur2)");
-            
+            .attr("filter", "url(#gaussblur2)");    
     }
 };
 
 
-var transitionStars = function(duration) {
+var transitionStars = function(duration, count) {
     if (theme === "jeffers") {
-        for (var i = 0; i < nStars; i++) {
-            for (var a = 0; a < 11; a++){   
+        var i, a;
+        for (i = 0; i < nStars; i++) {
+            for (a = 0; a < 11; a++){   
                 starApexes[i][a][0] = apexStorage[i][a][0] + pos[i][0];
                 starApexes[i][a][1] = apexStorage[i][a][1] + pos[i][1];
             }
@@ -235,6 +233,7 @@ var transitionStars = function(duration) {
             .attr("d", lineFunction)
             .duration(duration);
     }
+    
     else if (theme === "kepler") {
         d3.selectAll(".star")
           .transition()
@@ -243,25 +242,49 @@ var transitionStars = function(duration) {
             .attr("cy", function(d) { return y(d[1]); })
             .duration(duration);
     }
+    
     else if (theme === "keplerP") {
-        
-        d3.selectAll(".star.solid, .star.diffuse").sort( function(a, b) {
+        // sort the planets and stars by z so that they occult each other correctly
+        d3.selectAll(".star.solid, .star.diffuse .trail").sort( function(a, b) {
             if (a[2] < b[2] - 0.01){   
                 return -1;
-            }
-            else if (a[2] == b[2]){
-                return 0;
             }
             else{ 
                 return 1;
             }
         });
+      
         d3.selectAll(".star")
           .transition()
             .ease("linear")
             .attr("cx", function(d) { return x(d[0]); })
             .attr("cy", function(d) { return y(d[1]); })
             .duration(duration);
+            
+        /*var fadeclass = ".trail" + count.toString();
+        d3.select("#starLayer").selectAll(fadeclass)
+            .data(pos)
+          .enter()
+            .append("circle")
+            .attr("cx", function(d) { return x(d[0]); })
+            .attr("cy", function(d) { return y(d[1]); })
+            .attr("r", function(d, i) { 
+                if (masses[i] > 0.01) { 
+                    return 0;
+                } 
+                else {
+                    return 2;
+                } 
+            })
+            .attr("fill", "rgb(255, 255, 255)")
+            .attr("class", "trail "+fadeclass)
+            .attr("filter", "url(#gaussblur2)")
+          .transition()
+            .delay(1000)
+            .ease("linear")
+            .style("opacity", .001)
+            .duration(250)
+            .remove();*/
     }
 };
 
