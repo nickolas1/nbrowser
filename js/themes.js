@@ -110,6 +110,114 @@ var initializeStarPlot = function() {
             .attr("class", "kepler star compact")
             .attr("filter", "url(#gaussblur2)");
     }
+    else if (theme === "keplerP") {
+        var xrange = 6,
+            yrange = xrange * h / w;
+        console.log(xrange, yrange);
+        x.domain([-xrange/2, xrange/2]);
+        y.domain([-yrange/2, yrange/2]);
+        
+        var colorLo = "rgb(221, 56, 0)",
+            colorMid = "rgb(221, 175, 0)",
+            colorHi = "rgb(82, 121, 221)";
+       /* var c = d3.scale.linear() // color scale for sink particles
+            .domain(d3.extent(masses))
+            .range([colorLo, colorHi]).interpolate(d3.interpolateRgb); */
+            
+        var colorChoices = ["rgb(229, 24, 7)", "rgb(251, 190, 2)"]
+        var colors = d3.scale.linear()
+            .domain(d3.range(0, 1.01, 1.0 / (colorChoices.length - 1)))
+            .range(colorChoices);
+        var c = d3.scale.linear()
+            .domain(d3.extent(masses))
+            .range([0, 1])
+        
+        d3.select("#starLayer").selectAll(".star.diffuse")
+            .data(pos)
+          .enter()
+            .append("circle")
+            .attr("cx", function(d) { return x(d[0]); })
+            .attr("cy", function(d) { return y(d[1]); })
+            .attr("r", function(d, i) {
+                if (masses[i] > 0.01) { 
+                    return 35 * Math.sqrt(masses[i]/d3.max(masses));
+                } 
+                else {
+                    return 3;
+                } 
+            })
+            .attr("fill", function(d, i) { 
+                if (masses[i] > 0.01) {
+                    return colors(c(masses[i])); 
+                }
+                else {
+                    return "rgb(6, 16, 74)";
+                }       
+            })
+            .attr("opacity", 0.8)
+            .attr("class", "kepler star diffuse")
+            .attr("filter", "url(#gaussblur2)");
+        
+        d3.select("#starLayer").selectAll(".star.solid")
+            .data(pos)
+          .enter()
+            .append("circle")
+            .attr("cx", function(d) { return x(d[0]); })
+            .attr("cy", function(d) { return y(d[1]); })
+            .attr("r", function(d, i) { 
+                if (masses[i] > 0.01) { 
+                    return 33 * Math.sqrt(masses[i]/d3.max(masses));
+                } 
+                else {
+                    return 4;
+                }  
+            })
+            .attr("fill", function(d, i) { 
+                if (masses[i] > 0.01) {
+                    return colors(c(masses[i])); 
+                }
+                else {
+                    return "rgb(6, 16, 74)";
+                }
+            })
+            .attr("opacity", function(d, i) {
+                if (masses[i] > 0.01) {
+                    return 0.5;
+                }
+                else {
+                    return 1.0;
+                }
+            })
+            .attr("stroke","rgb(163, 182, 247)")
+            .attr("stroke-width", function(d, i) {
+                if (masses[i] > 0.01) {
+                    return "0px";
+                }
+                else {
+                    return "0.5px";
+                }
+            })
+            .attr("class", "kepler star solid");
+    
+        d3.select("#starLayer").selectAll(".star.compact")
+            .data(pos)
+          .enter()
+            .append("circle")
+            .attr("cx", function(d) { return x(d[0]); })
+            .attr("cy", function(d) { return y(d[1]); })
+            .attr("r", function(d, i) { 
+                if (masses[i] > 0.01) { 
+                    return 9 * Math.sqrt(masses[i]/d3.max(masses));
+                } 
+                else {
+                    return 0;
+                } 
+            })
+            .attr("fill", "rgba(255, 255, 255, .9)")
+            .attr("class", "kepler star compact")
+            .attr("filter", "url(#gaussblur2)");
+            
+    }
 };
 
 
@@ -135,6 +243,26 @@ var transitionStars = function(duration) {
             .attr("cy", function(d) { return y(d[1]); })
             .duration(duration);
     }
+    else if (theme === "keplerP") {
+        
+        d3.selectAll(".star.solid, .star.diffuse").sort( function(a, b) {
+            if (a[2] < b[2] - 0.01){   
+                return -1;
+            }
+            else if (a[2] == b[2]){
+                return 0;
+            }
+            else{ 
+                return 1;
+            }
+        });
+        d3.selectAll(".star")
+          .transition()
+            .ease("linear")
+            .attr("cx", function(d) { return x(d[0]); })
+            .attr("cy", function(d) { return y(d[1]); })
+            .duration(duration);
+    }
 };
 
 
@@ -143,7 +271,7 @@ var setBackgroundImage = function() {
     if (theme === "jeffers") {
         fBgImg = "images/htcas_2.jpg";
     }
-    else if (theme === "kepler") {
+    else if (theme === "kepler" || theme === "keplerP") {
         fBgImg = "images/purple-nebula.jpg";
     }
     d3.select("#backgroundImage").attr("xlink:href", fBgImg);

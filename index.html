@@ -5,6 +5,7 @@
   <script src="js/jquery.min.js"></script>
   <script src="js/d3.v3.min.js"></script>
   <script src="js/starfunctions.js"></script>
+  <script src="js/planetfunctions.js"></script>
   <script src="js/themes.js"></script>  
   <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -18,17 +19,20 @@
 </head>
 <body>
     <div id="nbodycanvas"></div>
-    <span id="keplerChooser" class="selector selected" onclick="selectKepler()">Kepler theme</span>
-    <span id="jeffersChooser" class="selector" onclick="selectJeffers()">Jeffers theme</span>
+    <span id="jeffersChooser" class="selector" onclick="selectJeffers()">Jeffers cluster</span>
+    <span id="keplerChooser" class="selector selected" onclick="selectKepler()">Kepler cluster</span>
+    <span id="keplerPlanetChooser" class="selector" onclick="selectKeplerPlanet()">Kepler planets</span>
     </br>
-    <a href = "http://www.oliverjeffers.com/picture-books/how-to-catch-a-star">buy some Oliver Jeffers books</a>
+    <a href="http://www.oliverjeffers.com/picture-books/how-to-catch-a-star">buy some Oliver Jeffers books</a>
     <a href="https://github.com/nickolas1/nbrowser">fork me</a>
 
     <script type="text/javascript">
 
     var selectKepler = function() {
+        nStars = 32;
         theme = "kepler";
         $("#jeffersChooser").attr("class", "selector");
+        $("#keplerPlanetChooser").attr("class", "selector");
         $("#keplerChooser").attr("class", "selector selected");
         $("#starLayer").empty();
         setBackgroundImage();
@@ -39,8 +43,10 @@
         integrateStars();
     };
     var selectJeffers = function() {
+        nStars = 24;
         theme = "jeffers";
         $("#keplerChooser").attr("class", "selector");
+        $("#keplerPlanetChooser").attr("class", "selector");
         $("#jeffersChooser").attr("class", "selector selected");
         $("#starLayer").empty();
         starApexes = [],
@@ -52,9 +58,22 @@
         starsvg = initializeStarPlot();
         integrateStars();
     };
+    var selectKeplerPlanet = function() {
+        nStars = 16;
+        theme = "keplerP";
+        $("#keplerChooser").attr("class", "selector");
+        $("#keplerPlanetChooser").attr("class", "selector selected");
+        $("#jeffersChooser").attr("class", "selector");
+        $("#starLayer").empty();
+        setBackgroundImage();
+        generateStars();
+        calcAccels();
+        starsvg = initializeStarPlot();
+        integrateStars();
+    };
 
-    var theme = "kepler";
-    var nStars = 32,
+    var theme = "keplerP";
+    var nStars = 16,
         masses,
         pos,
         vel,
@@ -81,8 +100,13 @@
         initializeSvgLayers();
         setBackgroundImage();
         generateStars();
-        equilibrateStars();
+        if (theme !== "keplerP") {
+            console.log("ALERT");
+            equilibrateStars();
+        }
         calcAccels();
+        console.log(pos);
+        console.log(acc);
         starsvg = initializeStarPlot();
         integrateStars();
     })
@@ -117,10 +141,20 @@
     };
     
     var generateStars = function() {
-        masses = generateMasses(nStars);
-        pos = generatePositions(nStars);
-        acc = generatePositions(nStars);  // dummy values
-        vel = generateVelocities(nStars, pos);
+        if (theme !== "keplerP"){
+            masses = generateMasses(nStars);
+            pos = generatePositions(nStars);
+            acc = generatePositions(nStars);  // dummy values
+            vel = generateVelocities(nStars, pos);
+        }
+        else if (theme === "keplerP") {
+            pos = [];
+            vel = [];
+            masses = generateMassesP(nStars);
+            generateBodiesP(nStars);
+            console.log(pos);
+            acc = generatePositions(nStars);  // dummy values
+        }
     };
 
     var equilibrateStars = function() {
@@ -163,14 +197,22 @@
     /** time integration functions below **/   
     
     var integrateStars = function() {
-        var fps = 64;
-        var dt = .002;
+        var fps = 64,
+            redraw = 8;
+        if (theme === "keplerP") {
+            console.log("ALERT");
+            fps = 640;
+            redraw = 80;
+        }
+        console.log(1000/fps, redraw, 1000/(fps/redraw));
+        var dt = 0.002;
         var count = 0;
         setInterval( function() {
             leapfrogStep(dt);
+           
             count++;
-            if (count === 8) {
-                transitionStars(250);
+            if (count === redraw) {
+                transitionStars(125);
                 count = 0;
             }
            /* d3.selectAll(".star")

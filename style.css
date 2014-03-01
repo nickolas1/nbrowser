@@ -27,6 +27,8 @@ body {
 		-ms-transition: color 0.35s ease-in-out, border-bottom-color 0.35s ease-in-out;
 		transition: color 0.35s ease-in-out, border-bottom-color 0.35s ease-in-out;
 		outline: 0;
+		margin-right: 40px;
+		font-size: 0.8em;
 }
     a:hover
 		{
