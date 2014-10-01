@@ -84,7 +84,8 @@ var initializeSvgLayers = function() {
     var svg = d3.select("#nbodycanvas").append("svg")
         .attr("width", w)
         .attr("height", h)
-        .attr("id", "svg");
+        .attr("id", "svg")
+        .attr("overflow", "hidden");
     svg.append("image") // background image layer
         .attr("width", w)
         .attr("height", h)
