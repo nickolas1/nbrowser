@@ -64,10 +64,10 @@ var initializeSvgLayers = function() {
         .attr("stdDeviation", 2);
     defs.append("filter")
         .attr("id", "gaussblur3")
-        .attr("x", "-30%")
-        .attr("y", "-30%")
-        .attr("width", "160%")
-        .attr("height", "160%")
+        .attr("x", "-40%")
+        .attr("y", "-40%")
+        .attr("width", "180%")
+        .attr("height", "180%")
       .append("feGaussianBlur")
         .attr("in", "SourceGraphic")
         .attr("stdDeviation", 3);

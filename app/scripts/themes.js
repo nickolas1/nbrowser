@@ -108,14 +108,14 @@ var initializeStarPlot = function() {
               if (masses[i] > 0.01) {
                   return 27 * Math.sqrt(masses[i]/d3.max(masses));
               } else {
-                  return 3;
+                  return 4;
               }
           })
           .attr("fill", function(d, i) {
               if (masses[i] > 0.01) {
                   return colors(c(masses[i])); 
               } else {
-                    return "rgb(6, 16, 74)";
+                    return "rgb(43, 15, 118)";
               }
           })
           .attr("stroke", function(d, i) { 
@@ -133,10 +133,10 @@ var initializeStarPlot = function() {
           .attr("class", "kepler star")
           .attr("cx", function(d) { return x(d[0]); })
           .attr("cy", function(d) { return y(d[1]); })
-          .attr("r", function(d, i) { return 26 * Math.sqrt(masses[i]/d3.max(masses)); })
+          .attr("r", function(d, i) { return 27 * Math.sqrt(masses[i]/d3.max(masses)); })
           .attr("fill", "none")
           .attr("stroke", function(d, i) { return colors2(c(masses[i])); })
-          .attr("stroke-width", function(d, i) { return 10 * Math.sqrt(masses[i]/d3.max(masses)); })
+          .attr("stroke-width", function(d, i) { return 9 * Math.sqrt(masses[i]/d3.max(masses)); })
           .attr("opacity", 0.9)
           .attr("filter", "url(#gaussblur2)");
         
@@ -304,7 +304,7 @@ var setBackgroundImage = function() {
         fBgImg = "images/htcas_2.jpg";
     }
     else if (theme === "kepler" || theme === "keplerP") {
-        fBgImg = "images/purple-nebula.jpg";
+        fBgImg = "images/blue-nebula.jpg";
     }
     d3.select("#backgroundImage").attr("xlink:href", fBgImg);
 };
