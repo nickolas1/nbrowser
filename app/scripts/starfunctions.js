@@ -1,3 +1,7 @@
+/*jshint quotmark: double, unused: false  */
+"use strict";
+/* global nStars */
+
 var generateMasses = function(N) {
     // power law mass function from 1 to 10, alpha = -2.3
     var alpha = 2.3,
@@ -7,7 +11,8 @@ var generateMasses = function(N) {
         fm1 = 1.0 / Math.pow(mhi, alpham1),
         fmn = (fm1 - 1.0 / Math.pow(mlo, alpham1)) / (nStars - 1),
         constant = 1.0 / alpham1;
-    var masses = [],
+    var mass,
+        masses = [],
         mtot = 0.0;  
     var i, fmi;      
     for(i = 0; i < N; i++){
@@ -90,7 +95,7 @@ var calcCM = function(N, masses, positions, velocities) {
     return cm;
 };
     
-calcKineticEnergy = function(N, masses, velocities){
+var calcKineticEnergy = function(N, masses, velocities){
     var ke = 0.0,
         v2;
     var i, k;    
@@ -102,10 +107,10 @@ calcKineticEnergy = function(N, masses, velocities){
         ke += 0.5 * masses[i] * v2;
     }
     return ke;
-}
+};
     
     
-calcPotentialEnergy = function(N, masses, positions){
+var calcPotentialEnergy = function(N, masses, positions){
     var dr = [0.0, 0.0, 0.0],
         r2,
         pot = 0.0,
@@ -118,11 +123,11 @@ calcPotentialEnergy = function(N, masses, positions){
         posi = positions[i];
         mi = masses[i]; 
         for(j = i; j < N; j++){
-            if(i != j){ //get the pairwise force and add to both stars
+            if(i !== j){ //get the pairwise force and add to both stars
                 posj = positions[j];
                 mj = masses[j];
 
-                r2 = 0.0
+                r2 = 0.0;
                 for(k = 0; k < 3; k++){
                     dr[k] = posj[k] - posi[k];
                     r2 += dr[k] * dr[k];
@@ -132,5 +137,5 @@ calcPotentialEnergy = function(N, masses, positions){
         }
     }
     return pot;
-}
+};
 

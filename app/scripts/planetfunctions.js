@@ -1,3 +1,42 @@
+/*jshint quotmark: double, unused: false */
+"use strict";
+/* global pos, vel, masses */
+
+var eccentricAnomoly = function(M, e) {
+    var E0 = M,
+        eps = 1.e-10,
+        E1 = E0 - (E0 - e * Math.sin(E0) - M) / (1 - e * Math.cos(E0));
+    while ( Math.abs(E1 - E0) > eps ) {
+        E0 = E1;
+        E1 = E0 - (E0 - e * Math.sin(E0) - M) / (1 - e * Math.cos(E0));
+    }
+    return E1;
+};
+
+var kepToCart = function(a, e, i, O, w, M, mu) {
+    var E = eccentricAnomoly(M, e);
+    var Px = Math.cos(w) * Math.cos(O) - Math.sin(w) * Math.cos(i) * Math.sin(O),
+        Py = Math.cos(w) * Math.sin(O) + Math.sin(w) * Math.cos(i) * Math.cos(O),
+        Pz = Math.sin(w) * Math.sin(i);
+    var Qx = -Math.sin(w) * Math.cos(O) - Math.cos(w) * Math.cos(i) * Math.sin(O),
+        Qy = -Math.sin(w) * Math.sin(O) + Math.cos(w) * Math.cos(i) * Math.cos(O),
+        Qz = Math.cos(w) * Math.sin(i);
+    var coeff1 = a * (Math.cos(E) - e),
+        coeff2 = a * Math.sqrt(1 - e*e) * Math.sin(E),
+        coeff3 = Math.sqrt(mu / (a*a*a)) / (1 - e * Math.cos(E)),
+        coeff4 = -a * Math.sin(E),
+        coeff5 = a * Math.sqrt(1 - e*e) * Math.cos(E);
+    var statevec = [
+        coeff1 * Px + coeff2 * Qx,
+        coeff1 * Py + coeff2 * Qy,
+        coeff1 * Pz + coeff2 * Qz,
+        coeff3 * (coeff4 * Px + coeff5 * Qx),
+        coeff3 * (coeff4 * Py + coeff5 * Qy),
+        coeff3 * (coeff4 * Pz + coeff5 * Qz)
+    ];
+    return statevec;
+};
+
 var generateMassesP = function(N) {
     // power law mass function from 1 to 3, alpha = -2.3
     // generate stellar masses only for N/4 stars, the rest get jupiter mass
@@ -8,7 +47,8 @@ var generateMassesP = function(N) {
         fm1 = 1.0 / Math.pow(mhi, alpham1),
         fmn = (fm1 - 1.0 / Math.pow(mlo, alpham1)) / (N / 4 - 1),
         constant = 1.0 / alpham1;
-    var masses = [],
+    var mass,
+        masses = [],
         mtot = 0.0; 
     var i;       
     for(i = 0; i < N / 4; i++){
@@ -33,9 +73,12 @@ var generateBodiesP = function(N) {
     var posx,
         posy,
         posz,
+        velx,
+        vely,
+        velz,
         a1, a2;
-    var posbase = [[1.2, 1, 40], [-1, -1, 20], [-1.3, 0.8, 0], [1, -0.9, -20]],
-        velbase = [[.1, -.3, 0], [-.4, .3, 0], [.5,.2, 0], [-.2, -.2, 0]],
+    var posbase = [[1.2, 0.9, 30], [-0.9, -1, 20], [-1.2, 0.8, 0], [1, -0.8, -20]],
+        velbase = [[0.1, -0.3, 0], [-0.4, 0.3, 0], [0.5,0.2, 0], [-0.2, -0.2, 0]],
         scale = 0.3;
     var i;
     for(i = 0; i < N / 4; i++) {
@@ -44,9 +87,9 @@ var generateBodiesP = function(N) {
         posz = posbase[i][2];
         posx = (posbase[i][0] + (0.5 - a1) * scale);
         posy = (posbase[i][1] + (0.5 - a2) * scale);
-        velx = velbase[i][0] * .05;
-        vely = velbase[i][1] * .05;
-        velz = velbase[i][2] * .05;
+        velx = velbase[i][0] * 0.05;
+        vely = velbase[i][1] * 0.05;
+        velz = velbase[i][2] * 0.05;
         pos.push([posx, posy, posz]);
         vel.push([velx, vely, velz]);
     }     
@@ -54,7 +97,6 @@ var generateBodiesP = function(N) {
     // put three planets around each star
     var count = 0,
         parent = 0,
-        pscale = 0.05,
         semis,
         incbase,
         inc,
@@ -111,39 +153,5 @@ var generateBodiesP = function(N) {
     } 
 };       
 
-var kepToCart = function(a, e, i, O, w, M, mu) {
-    E = eccentricAnomoly(M, e);
-    var Px = Math.cos(w) * Math.cos(O) - Math.sin(w) * Math.cos(i) * Math.sin(O),
-        Py = Math.cos(w) * Math.sin(O) + Math.sin(w) * Math.cos(i) * Math.cos(O),
-        Pz = Math.sin(w) * Math.sin(i);
-    var Qx = -Math.sin(w) * Math.cos(O) - Math.cos(w) * Math.cos(i) * Math.sin(O),
-        Qy = -Math.sin(w) * Math.sin(O) + Math.cos(w) * Math.cos(i) * Math.cos(O),
-        Qz = Math.cos(w) * Math.sin(i);
-    var coeff1 = a * (Math.cos(E) - e),
-        coeff2 = a * Math.sqrt(1 - e*e) * Math.sin(E),
-        coeff3 = Math.sqrt(mu / (a*a*a)) / (1 - e * Math.cos(E)),
-        coeff4 = -a * Math.sin(E),
-        coeff5 = a * Math.sqrt(1 - e*e) * Math.cos(E);
-    var statevec = [
-        coeff1 * Px + coeff2 * Qx,
-        coeff1 * Py + coeff2 * Qy,
-        coeff1 * Pz + coeff2 * Qz,
-        coeff3 * (coeff4 * Px + coeff5 * Qx),
-        coeff3 * (coeff4 * Py + coeff5 * Qy),
-        coeff3 * (coeff4 * Pz + coeff5 * Qz)
-    ];
-    return statevec;
-};
 
-
-var eccentricAnomoly = function(M, e) {
-    var E0 = M,
-        eps = 1.e-10,
-        E1 = E0 - (E0 - e * Math.sin(E0) - M) / (1 - e * Math.cos(E0));
-    while ( Math.abs(E1 - E0) > eps ) {
-        E0 = E1;
-        E1 = E0 - (E0 - e * Math.sin(E0) - M) / (1 - e * Math.cos(E0));
-    }
-    return E1;
-};
 

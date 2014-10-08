@@ -1,0 +1,47 @@
+// bower:scss
+// endbower
+
+////////////////////////////////
+// reset margins and padding, add some utilities
+////////////////////////////////
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+* {
+margin: 0;
+padding: 0;
+}
+
+.group:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.stretch:after {
+  width: 100%;
+  display: inline-block;
+  font-size: 0;
+  line-height: 0;
+}
+
+.ir {
+  border: 0;
+  overflow: hidden;
+  *text-indent: -9999px;
+
+  &:before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 100%;
+  }
+}
+
+
+
