@@ -1,0 +1,22 @@
+// bower:scss
+// endbower
+
+/*--------------------------------
+/ themes -----------------------*/
+@import "themes/_config.scss";
+
+/*--------------------------------
+/ base -------------------------*/
+@import "base/_reset.scss";
+@import "base/_base.scss";
+
+/*--------------------------------
+/ modules -----------------------*/
+@import "modules/_base-module.scss";
+
+.browsehappy {
+  margin: 0.2em 0;
+  background: #ccc;
+  color: #000;
+  padding: 0.2em 0;
+}

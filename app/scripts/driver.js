@@ -1,49 +1,21 @@
-var launchIntegrator = function() {
-    setBackgroundImage();
-    generateStars();
-    if(theme != 'keplerP') equilibrateStars();
-    calcAccels();
-    starsvg = initializeStarPlot();
-    integrateStars();
-}
-
-var selectKepler = function() {
-    nStars = 32;
-    theme = "kepler";
-    $(".selector.selected").removeClass("selector selected").addClass("selector");
-    $("#keplerChooser").removeClass("selector").addClass("selector selected");
-    $("#starLayer").empty();
-    launchIntegrator();
-};
-var selectJeffers = function() {
-    nStars = 24;
-    theme = "jeffers";
-    $(".selector.selected").removeClass("selector selected").addClass("selector");
-    $("#jeffersChooser").removeClass("selector").addClass("selector selected");
-    $("#starLayer").empty();
-    starApexes = [],
-    apexStorage = [];
-    launchIntegrator();
-};
-var selectKeplerPlanet = function() {
-    nStars = 16;
-    theme = "keplerP";
-    $(".selector.selected").removeClass("selector selected").addClass("selector");
-    $("#keplerPlanetChooser").removeClass("selector").addClass("selector selected");
-    $("#starLayer").empty();
-    launchIntegrator();
-};
+/*jshint quotmark: double, unused: false*/
+"use strict";
+/* global d3, 
+generateMasses, generatePositions, generateVelocities,
+generateMassesP, generatePositionsP, generateVelocitiesP, generateBodiesP,
+calcCM, calcKineticEnergy, calcPotentialEnergy,
+transitionStars, setBackgroundImage, initializeStarPlot
+ */
 
 var theme = "jeffers";
-var nStars = 16,
+var nStars,
     masses,
     pos,
     vel,
     acc;
 var starsvg;
 var starApexes = [],
-    apexStorage = [],
-    oldpos = []; // old positions for planet paths
+    apexStorage = [];
 var integrateTimer;
 
 var w = 700,
@@ -62,20 +34,6 @@ var lineFunction = d3.svg.line()
     .y(function(d) { return y(d[1]); })
     .interpolate("linear");
 
-$(function() {
-    var about = $("#about");
-    about.poptrox();
-
-    initializeSvgLayers();
-    setBackgroundImage();
-    generateStars();
-    if (theme !== "keplerP") {
-        equilibrateStars();
-    }
-    calcAccels();
-    starsvg = initializeStarPlot();
-    integrateStars();
-})
 
 /////////////////////////////////////////
 /** DOM initialization and star setup **/  
@@ -97,11 +55,19 @@ var initializeSvgLayers = function() {
     var defs = svg.append("defs");
     defs.append("filter")
         .attr("id", "gaussblur2")
+        .attr("x", "-30%")
+        .attr("y", "-30%")
+        .attr("width", "160%")
+        .attr("height", "160%")
       .append("feGaussianBlur")
         .attr("in", "SourceGraphic")
         .attr("stdDeviation", 2);
     defs.append("filter")
         .attr("id", "gaussblur3")
+        .attr("x", "-40%")
+        .attr("y", "-40%")
+        .attr("width", "180%")
+        .attr("height", "180%")
       .append("feGaussianBlur")
         .attr("in", "SourceGraphic")
         .attr("stdDeviation", 3);
@@ -163,38 +129,6 @@ var equilibrateStars = function() {
 ////////////////////////////////////////
 /** time integration functions below **/   
 
-var integrateStars = function() {
-    var fps = 64,
-        redraw = 8,
-        totcount = 0,
-        dt = 0.002;
-    if (theme === "keplerP") {
-        fps = 64;
-        redraw = 8;
-        dt = 0.02;
-    }
-   // console.log("timing ",1000/fps, redraw, 1000/(fps/redraw));
-   // var dt = 0.002;
-    var count = 0;
-    clearInterval(integrateTimer);
-    integrateTimer = setInterval( function() {
-        leapfrogStep(dt); 
-        count++;
-        totcount++;
-        if (count === redraw) {
-            transitionStars(125, totcount);
-            count = 0;
-        }
-    }, 1000/fps);
-};
-
-var leapfrogStep = function(dt) {
-    kickStars(dt * 0.5);
-    driftStars(dt);
-    calcAccels();
-    kickStars(dt * 0.5);
-};
-
 var kickStars = function(tstep) {
     var i, k;
     for (i = 0; i < nStars; i++) {
@@ -228,10 +162,10 @@ var calcAccels = function(){
 
     for(i = 0; i < nStars - 1; i++){
         for(j = i + 1; j < nStars; j++){
-            r2 = 0.0
+            r2 = 0.0;
             for(k = 0; k < 3; k++){
                 dr[k] = pos[j][k] - pos[i][k];
-                r2 += dr[k] * dr[k]
+                r2 += dr[k] * dr[k];
             }
             r3 = r2 * Math.sqrt(r2) + 1.e-7;
         
@@ -243,3 +177,91 @@ var calcAccels = function(){
         }
     }
 };
+
+var leapfrogStep = function(dt) {
+    kickStars(dt * 0.5);
+    driftStars(dt);
+    calcAccels();
+    kickStars(dt * 0.5);
+};
+
+var integrateStars = function() {
+    var fps = 64,
+        redraw = 8,
+        dt = 0.002;
+    if (theme === "keplerP") {
+        fps = 64;
+        redraw = 8;
+        dt = 0.02;
+    }
+    var count = 0;
+    
+    var starselection = d3.selectAll(".star");
+    var containerselection = d3.selectAll(".starContainer");
+    
+    clearInterval(integrateTimer);
+    integrateTimer = setInterval( function() {
+        leapfrogStep(dt); 
+        count++;
+        if (count === redraw) {
+            transitionStars(125, starselection, containerselection);
+            count = 0;
+        }
+    }, 1000/fps);
+};
+
+/////////////////////////////////////////
+/** theme selection **/  
+
+var launchIntegrator = function() {
+    setBackgroundImage();
+    // reset stars
+    starApexes = [];
+    apexStorage = [];
+    generateStars();
+    if(theme !== "keplerP"){
+       equilibrateStars();
+    }
+    calcAccels();
+    starsvg = initializeStarPlot();
+    integrateStars();
+};
+
+var selectKepler = function() {
+    nStars = 32;
+    theme = "kepler";
+    $(".selector.selected").removeClass("selected");
+    $("#keplerChooser").addClass("selected");
+    $("#starLayer").empty();
+    launchIntegrator();
+};
+var selectJeffers = function() {
+    nStars = 24;
+    theme = "jeffers";
+    $(".selector.selected").removeClass("selected");
+    $("#jeffersChooser").addClass("selected");
+    $("#starLayer").empty();
+    launchIntegrator();
+};
+var selectKeplerPlanet = function() {
+    nStars = 16;
+    theme = "keplerP";
+    $(".selector.selected").removeClass("selected");
+    $("#keplerPlanetChooser").addClass("selected");
+    $("#starLayer").empty();
+    launchIntegrator();
+};
+
+
+/////////////////////////////////////////
+/** spin it up **/ 
+$(function() {
+    var about = $("#about");
+    about.poptrox();
+    
+    selectJeffers();
+    
+    initializeSvgLayers();
+    
+    selectJeffers();
+});

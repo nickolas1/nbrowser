@@ -1,0 +1,45 @@
+// bower:scss
+// endbower
+
+.star.jeffers {
+    fill: white;
+    stroke: #666666;
+}
+
+h1 {
+  margin: 1em 0 0 1rem;
+}
+
+h2 {
+   margin: 0 0 .5rem 1rem;
+}
+
+.instruction {
+    padding: 0 1rem;
+    font-size: 1em;
+}
+
+.selector {
+    font-size: 1.1em;
+    cursor: pointer;
+    padding-right: 40px;
+}
+
+.selector.selected {
+    font-weight: 600;
+}
+
+.footer a {
+  font-size: 0.95em;
+  margin: 0 1rem;
+}
+
+
+#aboutText {
+  font-size:1.2em;
+  line-height: 1.5em;
+}
+
+#aboutText a {
+  margin-left: 0;
+}
