@@ -201,7 +201,7 @@ var setBackgroundImage = function() {
         fBgImg = "images/htcas_2.jpg";
     }
     else if (theme === "kepler" || theme === "keplerP") {
-        fBgImg = "images/blue-nebula.jpg";
+        fBgImg = "images/blue-nebula2.jpg";
     }
     d3.select("#backgroundImage").attr("xlink:href", fBgImg);
 };
