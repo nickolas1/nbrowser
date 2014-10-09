@@ -30,18 +30,6 @@ padding: 0;
   line-height: 0;
 }
 
-.ir {
-  border: 0;
-  overflow: hidden;
-  *text-indent: -9999px;
-
-  &:before {
-    content: "";
-    display: block;
-    width: 0;
-    height: 100%;
-  }
-}
 
 
 
