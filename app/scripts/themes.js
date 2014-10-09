@@ -198,10 +198,10 @@ var transitionStars = function(duration, starselection, containerselection) {
 var setBackgroundImage = function() {
     var fBgImg;
     if (theme === "jeffers") {
-        fBgImg = "images/htcas_2.jpg";
+        fBgImg = "images/htcas_small.jpg";
     }
     else if (theme === "kepler" || theme === "keplerP") {
-        fBgImg = "images/blue-nebula2.jpg";
+        fBgImg = "images/blue-nebula.jpg";
     }
     d3.select("#backgroundImage").attr("xlink:href", fBgImg);
 };
