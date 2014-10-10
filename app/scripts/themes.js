@@ -187,11 +187,8 @@ var transitionStars = function(duration, starselection, containerselection) {
           });
         }
         starselection
-          .transition()
-            .ease("linear")
             .attr("cx", function(d) { return x(d[0]); })
-            .attr("cy", function(d) { return y(d[1]); })
-            .duration(duration);
+            .attr("cy", function(d) { return y(d[1]); });
     }
 };
 

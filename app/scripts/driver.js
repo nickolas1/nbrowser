@@ -186,13 +186,13 @@ var leapfrogStep = function(dt) {
 };
 
 var integrateStars = function() {
-    var sps = 40, /* steps per second */
-        redraw = 10,
+    var sps = 60, /* steps per second */
+        redraw = 2,
         transitiontime = 250,
-        dt = 0.003;
+        dt = 0.002;
     if (theme === "keplerP") {
         sps = 40;
-        redraw = 4;
+        redraw = 1;
         transitiontime = 100;
         dt = 0.03;
     }
