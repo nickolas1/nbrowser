@@ -175,6 +175,9 @@ var transitionStars = function(duration, starselection, containerselection) {
             .attr("d", lineFunction)
             .duration(duration);
     } else {
+      /* the opacque stars above work fine with d3 transitions, but with opacity
+      effects like the kepler stars firefox and safari are terrible. it's slightly
+      better just to manually redraw the frames at some framerate, set in driver.js */
         if(theme === "keplerP") {
           // sort the planets and stars by z so that they occult each other correctly
           containerselection
