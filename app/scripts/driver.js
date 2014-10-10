@@ -186,13 +186,15 @@ var leapfrogStep = function(dt) {
 };
 
 var integrateStars = function() {
-    var fps = 64,
-        redraw = 8,
-        dt = 0.002;
+    var sps = 40, /* steps per second */
+        redraw = 10,
+        transitiontime = 250,
+        dt = 0.003;
     if (theme === "keplerP") {
-        fps = 64;
-        redraw = 8;
-        dt = 0.02;
+        sps = 40;
+        redraw = 4;
+        transitiontime = 100;
+        dt = 0.03;
     }
     var count = 0;
     
@@ -204,10 +206,10 @@ var integrateStars = function() {
         leapfrogStep(dt); 
         count++;
         if (count === redraw) {
-            transitionStars(125, starselection, containerselection);
+            transitionStars(1.75*transitiontime, starselection, containerselection);
             count = 0;
         }
-    }, 1000/fps);
+    }, 1000/sps);
 };
 
 /////////////////////////////////////////

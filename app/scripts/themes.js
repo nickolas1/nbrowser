@@ -10,6 +10,7 @@ var initializeStarPlot = function() {
         colors,
         colors2,
         c;
+    var starContainer;
         
     // creates the svg representation of the stars
     if (theme === "jeffers") {
@@ -82,7 +83,7 @@ var initializeStarPlot = function() {
             colorChoices2 = ["rgb(221, 38, 33)", "rgb(238, 128, 15)"];
             massExtent = [masses[3], masses[0]];
         }
-        console.log(colorChoices);
+
         colors = d3.scale.linear()
             .domain(d3.range(0, 1.01, 1.0 / (colorChoices.length - 1)))
             .range(colorChoices);
@@ -92,8 +93,8 @@ var initializeStarPlot = function() {
         c = d3.scale.log()
             .domain(massExtent)
             .range([0, 1]);
-        console.log(masses);
-        var starContainer = d3.select("#starLayer").selectAll("g")
+            
+        starContainer = d3.select("#starLayer").selectAll("g")
             .data(pos)
           .enter()
             .append("g")
