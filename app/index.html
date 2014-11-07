@@ -29,9 +29,9 @@
     <div id="nbodycanvas"></div>
     
     <span class="instruction">pick a theme:</span>
-    <span id="jeffersChooser" class="selector selected" onclick="selectJeffers()">Jeffers cluster</span>
-    <span id="keplerChooser" class="selector" onclick="selectKepler()">Kepler cluster</span>
-    <span id="keplerPlanetChooser" class="selector" onclick="selectKeplerPlanet()">Kepler planets</span>
+    <span id="jeffersChooser" class="selector selected">Jeffers cluster</span>
+    <span id="keplerChooser" class="selector">Kepler cluster</span>
+    <span id="keplerPlanetChooser" class="selector">Kepler planets</span>
     <br>
     <span class="footer">
       <span id="about">
@@ -61,10 +61,14 @@
     </script>
 
         <!-- build:js({app,.tmp}) scripts/main.js -->
-        <script src="scripts/starfunctions.js"></script>
+       <!-- <script src="scripts/starfunctions.js"></script>
         <script src="scripts/planetfunctions.js"></script>
         <script src="scripts/themes.js"></script>
-        <script src="scripts/driver.js"></script>
+        <script src="scripts/driver.js"></script>-->
+        <script src="scripts/bodies.js"></script>
+        <script src="scripts/cluster.js"></script>
+        <script src="scripts/integrator.js"></script>
+        <script src="scripts/simulation.js"></script>
         <!-- endbuild -->
 </body>
 </html>
