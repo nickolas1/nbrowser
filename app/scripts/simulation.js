@@ -23,12 +23,13 @@ function Simulation() {
 
 Simulation.prototype.selectType = function(theme, N) {
     this.N = N;
-    this.integrator = null; //clear old integrator
-    this.integrator = new Integrator(this.N);
     this.theme = theme;
     this.starApexes = [];
     this.apexStorage = [];
     
+    this.integrator = null; //clear old integrator
+    this.integrator = new Integrator(this.N, this.theme);
+
     if(this.theme !== "keplerPlanet") {
         this.sps = 60; /* steps per second */
         this.redraw = 2;
@@ -60,19 +61,22 @@ Simulation.prototype.initializeStarPlot = function() {
         colorChoices2,
         colors,
         colors2,
-        c;
+        c,
+        x = this.x,
+        y = this.y;
     var starContainer;
         
+    var stars = this.integrator.cluster.stars;
+    
     // creates the svg representation of the stars
     if (this.theme === "jeffers") {
     
         xrange = 12;
         yrange = xrange * this.h / this.w;
         var i, a;
-        var stars = this.integrator.cluster.stars;
   
-        this.x.domain([-8, 4]);
-        this.y.domain([2.5-yrange, 2.5]);
+        x.domain([-8, 4]);
+        y.domain([2.5-yrange, 2.5]);
             
         // raw shape of the star. these get scaled by the sqrt of mass
         // and stretched / flipped randomly to make the stars look more organic
@@ -120,21 +124,22 @@ Simulation.prototype.initializeStarPlot = function() {
             .attr("d", this.lineFunction)
             .attr("class", "jeffers star");       
     }
-    else if (this.theme === "kepler" || this.theme === "keplerP") {
+    else if (this.theme === "kepler" || this.theme === "keplerPlanet") {
         xrange = 5;
         yrange = xrange * this.h / this.w;
-        this.x.domain([-xrange/2, xrange/2]);
-        this.y.domain([-yrange/2, yrange/2]);
-        var massExtent;
+        x.domain([-xrange/2, xrange/2]);
+        y.domain([-yrange/2, yrange/2]);
+        var massExtent,
+            maxmass = stars[0].mass;
         
         if (this.theme === "kepler") {
             colorChoices =  ["rgb(221, 56, 0)", "rgb(221, 137, 20)", "rgb(235, 170, 24)", "rgb(106, 137, 234)"];
             colorChoices2 = ["rgb(221, 38, 33)", "rgb(221, 56, 0)", "rgb(238, 128, 15)", "rgb(141, 125, 234)"];
-            massExtent = d3.extent(masses);
+            massExtent = [stars[this.N-1].mass, stars[0].mass];
         } else {
             colorChoices =  ["rgb(221, 56, 0)", "rgb(235, 170, 24)"];
             colorChoices2 = ["rgb(221, 38, 33)", "rgb(238, 128, 15)"];
-            massExtent = [masses[3], masses[0]];
+            massExtent = [stars[3].mass, stars[0].mass];
         }
 
         colors = d3.scale.linear()
@@ -148,7 +153,7 @@ Simulation.prototype.initializeStarPlot = function() {
             .range([0, 1]);
             
         starContainer = d3.select("#starLayer").selectAll("g")
-            .data(pos)
+            .data(stars)
           .enter()
             .append("g")
             .attr("class", "starContainer");
@@ -156,25 +161,25 @@ Simulation.prototype.initializeStarPlot = function() {
         starContainer
           .append("circle")
           .attr("class", "kepler star")
-          .attr("cx", function(d) { return x(d[0]); })
-          .attr("cy", function(d) { return y(d[1]); })
-          .attr("r", function(d, i) { 
-              if (masses[i] > 0.01) {
-                  return 27 * Math.sqrt(masses[i]/d3.max(masses));
+          .attr("cx", function(d) { return x(d.pos[0]); })
+          .attr("cy", function(d) { return y(d.pos[1]); })
+          .attr("r", function(d) { 
+              if (d.mass > 0.01) {
+                  return 27 * Math.sqrt(d.mass/maxmass);
               } else {
                   return 4;
               }
           })
-          .attr("fill", function(d, i) {
-              if (masses[i] > 0.01) {
-                  return colors(c(masses[i])); 
+          .attr("fill", function(d) {
+              if (d.mass > 0.01) {
+                  return colors(c(d.mass)); 
               } else {
                     return "rgb(43, 15, 118)";
               }
           })
-          .attr("stroke", function(d, i) { 
-              if (masses[i] > 0.01) { 
-                  return colors2(c(masses[i]));
+          .attr("stroke", function(d) { 
+              if (d.mass > 0.01) { 
+                  return colors2(c(d.mass));
               } else { 
                   return "rgb(163, 182, 247)";
               }
@@ -185,23 +190,23 @@ Simulation.prototype.initializeStarPlot = function() {
         starContainer
           .append("circle")
           .attr("class", "kepler star")
-          .attr("cx", function(d) { return x(d[0]); })
-          .attr("cy", function(d) { return y(d[1]); })
-          .attr("r", function(d, i) { return 27 * Math.sqrt(masses[i]/d3.max(masses)); })
+          .attr("cx", function(d) { return x(d.pos[0]); })
+          .attr("cy", function(d) { return y(d.pos[1]); })
+          .attr("r", function(d) { return 27 * Math.sqrt(d.mass/maxmass); })
           .attr("fill", "none")
-          .attr("stroke", function(d, i) { return colors2(c(masses[i])); })
-          .attr("stroke-width", function(d, i) { return 9 * Math.sqrt(masses[i]/d3.max(masses)); })
+          .attr("stroke", function(d) { return colors2(c(d.mass)); })
+          .attr("stroke-width", function(d) { return 9 * Math.sqrt(d.mass/maxmass); })
           .attr("opacity", 0.9)
           .attr("filter", "url(#gaussblur2)");
         
         starContainer  
           .append("circle")
           .attr("class", "kepler star")
-          .attr("cx", function(d) { return x(d[0]); })
-          .attr("cy", function(d) { return y(d[1]); })
-          .attr("r", function(d, i) { 
-              if (masses[i] > 0.01) { 
-                  return 8 * Math.sqrt(masses[i]/d3.max(masses));
+          .attr("cx", function(d) { return x(d.pos[0]); })
+          .attr("cy", function(d) { return y(d.pos[1]); })
+          .attr("r", function(d) { 
+              if (d.mass > 0.01) { 
+                  return 8 * Math.sqrt(d.mass/maxmass);
               } 
               else {
                   return 0;
@@ -271,7 +276,7 @@ Simulation.prototype.setBackgroundImage = function() {
     if (this.theme === "jeffers") {
         fBgImg = "images/htcas_small.jpg";
     }
-    else if (this.theme === "kepler" || this.theme === "keplerP") {
+    else if (this.theme === "kepler" || this.theme === "keplerPlanet") {
         fBgImg = "images/blue-nebula.jpg";
     }
     d3.select("#backgroundImage").attr("xlink:href", fBgImg);
@@ -294,11 +299,11 @@ Simulation.prototype.transitionStars = function(duration, starselection, contain
             .attr("d", this.lineFunction)
             .duration(duration);
     } else {
-        if(theme === "keplerP") {
+        if(this.theme === "keplerPlanet") {
           // sort the planets and stars by z so that they occult each other correctly
           containerselection
             .sort( function(a, b) {
-              if (a[2] < b[2] - 0.01){   
+              if (a.pos[2] < b.pos[2] - 0.01){   
                   return -1;
               } else { 
                   return 1;
@@ -306,37 +311,11 @@ Simulation.prototype.transitionStars = function(duration, starselection, contain
           });
         }
         starselection
-            .attr("cx", function(d) { return x(d[0]); })
-            .attr("cy", function(d) { return y(d[1]); });
+            .attr("cx", function(d) { return this.x(d.pos[0]); }.bind(this))
+            .attr("cy", function(d) { return this.y(d.pos[1]); }.bind(this));
     }
 };
 
-/////////////////////////////////////////
-/** spin it up **/ 
-$(function() {
-    var about = $("#about");
-    about.poptrox();
-    
-    var simulation = new Simulation();
-    
-    var selectKepler = function() {
-        simulation.selectType("kepler", 32);
-    };
-    var selectJeffers = function() {
-        simulation.selectType("jeffers", 24);
-    };
-    var selectKeplerPlanet = function() {
-        simulation.selectType("keplerPlanet", 16);
-    };
-    
-    $("#jeffersChooser").click(selectJeffers);
-    $("#keplerChooser").click(selectKepler);
-    $("#keplerPlanetChooser").click(selectKeplerPlanet);
-    
-    simulation.initializeSvgLayers();
-    
-    selectJeffers();
-});
 
 
 

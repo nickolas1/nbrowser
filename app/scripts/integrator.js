@@ -1,20 +1,25 @@
 /*jshint quotmark: double, unused: false*/
 "use strict";
 /* global d3, 
-Cluster
+Cluster, PlanetCluster
  */
 
 
-function Integrator(N) {
+function Integrator(N, theme) {
 
     this.sps = 60; /* steps per second */
     this.redraw = 2;
     this.transitionTime = 250;
     this.N = N;
     var dt;
-    
-    this.cluster = new Cluster(this.N);
-    this.cluster.equilibrateStars();
+
+    if (theme !== "keplerPlanet") {
+        this.cluster = new Cluster(this.N);
+        this.cluster.equilibrateStars();
+    }
+    else {
+        this.cluster = new PlanetCluster(this.N);
+    }
     
     Object.defineProperty(this, "dt", {
         get: function() {
